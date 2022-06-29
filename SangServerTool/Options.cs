@@ -24,7 +24,7 @@ namespace SangServerTool
     internal class AUTO_DDNS
     {
         /// <summary>
-        /// 配置AKSK相关
+        /// 配置AKSK相关,及DDNS域
         /// </summary>
         [Option('c', "config", Required = true, HelpText = "Set config json file.")]
         public string? ConfigFile { get; set; }
