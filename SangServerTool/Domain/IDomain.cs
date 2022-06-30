@@ -16,23 +16,10 @@ namespace SangServerTool.Domain
     /// <summary>
     /// 域名解析信息返回
     /// </summary>
-    public record DomainRes
-    {
-        /// <summary>
-        /// 数据获取成功与否
-        /// </summary>
-        public bool Success { get; set; }
-        /// <summary>
-        /// 记录值
-        /// </summary>
-        public string Value { get; set; } = "";
-        /// <summary>
-        /// 错误信息
-        /// </summary>
-        public string Msg { get; set; } = "";
-        /// <summary>
-        /// 记录ID
-        /// </summary>
-        public string Id { get; set; } = "";
-    }
+    /// <param name="Success">数据获取成功与否</param>
+    /// <param name="Msg">错误信息</param>
+    /// <param name="Id">记录ID</param>
+    /// <param name="Value">记录值</param>
+    public record DomainRes(bool Success, string Msg = "", string Id = "", string Value="");
+
 }

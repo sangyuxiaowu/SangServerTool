@@ -50,5 +50,21 @@ namespace SangServerTool
             //((System.Net.NetworkInformation.UnixUnicastIPAddressInformation)(new System.Linq.SystemCore_EnumerableDebugView<System.Net.NetworkInformation.UnicastIPAddressInformation>(ips).Items[1])).Address.IsIPv6LinkLocal
             return ips.FirstOrDefault()?.Address.ToString();
         }
+        /// <summary>
+        /// 获取电脑外网IP
+        /// </summary>
+        /// <returns></returns>
+        public static string CurrentIPAddress() {
+            using var client = new HttpClient();
+            string ip = "";
+            try
+            {
+                ip = client.GetStringAsync("https://ifconfig.me/ip").Result;
+            }
+            catch {
+                return ip;
+            }
+            return ip;
+        }
     }
 }

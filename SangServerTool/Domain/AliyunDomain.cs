@@ -6,8 +6,6 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web;
-using Flurl;
-using Flurl.Http;
 
 namespace SangServerTool.Domain
 {
@@ -31,9 +29,6 @@ namespace SangServerTool.Domain
             _Endpoint = endpoint;
         }
 
-
-
-
         /// <summary>
         /// 获取子域名解析记录列表
         /// DOC https://help.aliyun.com/document_detail/29778.html
@@ -52,42 +47,30 @@ namespace SangServerTool.Domain
             JsonNode json;
             try
             {
-                var jsonstring = await SignUrl(parameters, HttpMethod.Get).AllowAnyHttpStatus().GetStringAsync();
+                using var client = new HttpClient();
+                var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
                 json = JsonNode.Parse(jsonstring)!;
             }
             catch(Exception ex) {
                 //请求或转换异常
-                return new DomainRes() { 
-                    Success = false,
-                    Msg = ex.Message,
-                };
+                return new DomainRes(false, ex.Message);
             }
 
             // 返回有异常
             if (json["TotalCount"] is null) {
-                return new DomainRes()
-                {
-                    Success = false,
-                    Msg = "返回数据异常",
-                }; ;
+                return new DomainRes(false, "返回数据异常");
             }
 
-
-            if ((int)json["TotalCount"]!>0)
+            // 有解析数据返回解析结果
+            if ((int)json["TotalCount"]! > 0)
             {
-                return new DomainRes()
-                {
-                    Success = true,
-                    Id = json["DomainRecords"]["Record"][0]["RecordId"].ToString(),
-                    Value = json["DomainRecords"]["Record"][0]["Value"].ToString(),
+                var temp = json["DomainRecords"]["Record"][0];
+                return new DomainRes(true, "ok", temp["RecordId"].ToString(), temp["Value"].ToString());
 
-                };
             }
 
-            return new DomainRes()
-            {
-                Success = true
-            };
+            // 不存在解析信息
+            return new DomainRes(true);
             
         }
 
