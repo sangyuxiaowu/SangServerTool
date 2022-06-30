@@ -17,6 +17,7 @@ return Parser.Default.ParseArguments<AUTO_DDNS, AUTO_SSL>(args)
         IConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile(opt.ConfigFile, optional: false, reloadOnChange: false);
         IConfigurationRoot config = configBuilder.Build();
+  
         var al = new AliyunDomain(config["AK"], config["SK"]);
 
         Console.WriteLine($"检查解析：{config["DDNS"]}");
@@ -32,18 +33,33 @@ return Parser.Default.ParseArguments<AUTO_DDNS, AUTO_SSL>(args)
         var nowip = opt.IP == "" ? Utils.CurrentIPAddress(opt.IPV6) 
         : (opt.IP== "ifconfig" ? Utils.CurrentIPAddress() : opt.IP);
 
-        //检查IP
+        //检查IP是否合规
         if (!System.Net.IPAddress.TryParse(nowip,out _)) {
             Console.WriteLine("设置解析IP配置获取失败");
             return 1;
         }
-        
 
         Console.WriteLine($"设置解析：{nowip}");
         
-        //新建解析
+        //域名没有解析记录，新建解析
         if (Record.Id == "") {
             Console.WriteLine("新建记录");
+
+            //获取设置
+            string RR = Utils.GetRRDdns(config["DDNS"], config["Domain"]);
+            if (string.IsNullOrEmpty(RR)) {
+                Console.WriteLine("配置的DDNS解析或Domain域名异常");
+                return 1;
+            }
+            string Type = nowip.Length > 16 ? "AAAA" : "A";
+            Console.WriteLine($"准备解析：{RR}\t{Type}\t{nowip}");
+            var AddRecord = al.AddRecordsAsync(config["Domain"], RR, Type, nowip).Result;
+            if (AddRecord.Success)
+            {
+                Console.WriteLine($"解析成功：{AddRecord.Id}");
+                return 0;
+            }
+            Console.WriteLine($"解析失败：{AddRecord.Msg}");
             return 1;
         }
 

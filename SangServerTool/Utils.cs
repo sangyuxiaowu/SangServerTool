@@ -10,7 +10,7 @@ using System.Net;
 
 namespace SangServerTool
 {
-    internal static class Utils
+    public static class Utils
     {
         /// <summary>
         /// 证书是否在5日内过期
@@ -32,7 +32,7 @@ namespace SangServerTool
         /// </summary>
         /// <param name="isV6">是获取IPv6</param>
         /// <returns></returns>
-        public static string CurrentIPAddress(bool isV6 = false)
+        public static string? CurrentIPAddress(bool isV6 = false)
         {
             var family = isV6? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
             List<string> exps = new List<string> { "docker0", "lo", "l4tbr0" };
@@ -66,5 +66,43 @@ namespace SangServerTool
             }
             return ip;
         }
+
+        /// <summary>
+        /// 根据要申请的域名信息，返回要设置的RR信息
+        /// </summary>
+        /// <param name="domains">配置的证书DNS</param>
+        /// <param name="basedomain">基础域名</param>
+        /// <returns></returns>
+        public static string[] GetRRDomain(string domains, string basedomain)
+        {
+            string[] domain = domains.Split(' ');
+            for (var i = 0; i < domain.Length; i++)
+            {
+                domain[i] = domain[i].StartsWith("*") ? domain[i].Replace("*", "_acme-challenge") : "_acme-challenge." + domain[i];
+                var inx = domain[i].LastIndexOf(basedomain);
+                if (inx > -1)
+                {
+                    domain[i] = domain[i].Substring(0, inx - 1);
+                }
+            }
+            return domain;
+        }
+
+        /// <summary>
+        /// 根据DDNS地址和域名获取要设置的RR信息
+        /// </summary>
+        /// <param name="domain">DDNS</param>
+        /// <param name="basedomain">基础域名</param>
+        /// <returns>RR，空为异常</returns>
+        public static string GetRRDdns(string domain, string basedomain) {
+            // 解析主域名
+            if (domain == basedomain) return "@";
+            int inx = domain.LastIndexOf(basedomain);
+            if (inx > -1) { 
+                return domain.Substring(0, inx - 1);
+            }
+            return "";
+        }
+
     }
 }

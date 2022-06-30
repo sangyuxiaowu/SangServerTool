@@ -39,7 +39,7 @@ namespace SangServerTool
         /// 指定IP
         /// </summary>
         [Option("ip", Default = "", HelpText = "If set will be used. Otherwise automatically obtained.\n You can set 'ifconfig', It will check from 'https://ifconfig.me/ip' to get you Internet IP.")]
-        public string IP { get; set; }
+        public string? IP { get; set; }
 
     }
 

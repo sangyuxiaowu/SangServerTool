@@ -64,14 +64,53 @@ namespace SangServerTool.Domain
             // 有解析数据返回解析结果
             if ((int)json["TotalCount"]! > 0)
             {
-                var temp = json["DomainRecords"]["Record"][0];
-                return new DomainRes(true, "ok", temp["RecordId"].ToString(), temp["Value"].ToString());
+                var temp = json["DomainRecords"]!["Record"]![0]; 
+                return new DomainRes(true, "ok", temp["RecordId"]!.ToString(), temp["Value"]!.ToString());
 
             }
 
             // 不存在解析信息
             return new DomainRes(true);
             
+        }
+
+        /// <summary>
+        /// 添加域名解析
+        /// </summary>
+        /// <param name="DomainName"></param>
+        /// <param name="RR"></param>
+        /// <param name="Type"></param>
+        /// <param name="Value"></param>
+        /// <returns>域名设置信息</returns>
+        public async Task<DomainRes> AddRecordsAsync(string DomainName, string RR,string Type,string Value) {
+
+            var parameters = new Dictionary<string, string>();
+            parameters.Add("Action", "AddDomainRecord");
+            parameters.Add("DomainName", DomainName);
+            parameters.Add("RR", RR);
+            parameters.Add("Type", Type);
+            parameters.Add("Value", Value);
+
+            JsonNode json;
+            try
+            {
+                using var client = new HttpClient();
+                var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
+                json = JsonNode.Parse(jsonstring)!;
+            }
+            catch (Exception ex)
+            {
+                //请求或转换异常
+                return new DomainRes(false, ex.Message);
+            }
+
+            // 返回有异常
+            if (json["RecordId"] is null)
+            {
+                return new DomainRes(false, "返回数据异常");
+            }
+
+            return new DomainRes(true,"ok", json["RecordId"].ToString());
         }
 
         /// <summary>
