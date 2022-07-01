@@ -7,7 +7,7 @@ namespace SangServerTool
     /// 请求SSL证书的参数
     /// </summary>
     [Verb("ssl", HelpText = "Get Let's Encrypt SSL Cert.")]
-    internal class AUTO_SSL
+    public class AUTO_SSL
     {
         /// <summary>
         /// 配置ASSK和证书信息
@@ -21,13 +21,19 @@ namespace SangServerTool
     /// 配置DDNS的参数
     /// </summary>
     [Verb("ddns", HelpText = "Set DDNS.")]
-    internal class AUTO_DDNS
+    public class AUTO_DDNS
     {
         /// <summary>
         /// 配置AKSK相关,及DDNS域
         /// </summary>
         [Option('c', "config", Required = true, HelpText = "Set config json file.")]
         public string? ConfigFile { get; set; }
+
+        /// <summary>
+        /// 是否为IPv6地址
+        /// </summary>
+        [Option("del", Default = false, HelpText = "Is delete DDNS?")]
+        public bool Del { get; set; }
 
         /// <summary>
         /// 是否为IPv6地址
@@ -40,6 +46,7 @@ namespace SangServerTool
         /// </summary>
         [Option("ip", Default = "", HelpText = "If set will be used. Otherwise automatically obtained.\n You can set 'ifconfig', It will check from 'https://ifconfig.me/ip' to get you Internet IP.")]
         public string? IP { get; set; }
+
 
     }
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using System.Net;
@@ -46,8 +41,6 @@ namespace SangServerTool
             {
                 ips = ips.Where(p => !p.Address.IsIPv6LinkLocal);
             }
-            //((System.Net.NetworkInformation.UnixUnicastIPAddressInformation)(new System.Linq.SystemCore_EnumerableDebugView<System.Net.NetworkInformation.UnicastIPAddressInformation>(ips).Items[3])).Address.IsIPv6LinkLocal
-            //((System.Net.NetworkInformation.UnixUnicastIPAddressInformation)(new System.Linq.SystemCore_EnumerableDebugView<System.Net.NetworkInformation.UnicastIPAddressInformation>(ips).Items[1])).Address.IsIPv6LinkLocal
             return ips.FirstOrDefault()?.Address.ToString();
         }
         /// <summary>

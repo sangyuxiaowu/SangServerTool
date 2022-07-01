@@ -9,7 +9,11 @@ namespace SangServerTool.Domain
 
     internal interface IDomain
     {
-        Task<DomainRes> GetRecordsAsync(string SubDomain,string Type);
+        Task<DomainRes> AddRecordsAsync(string DomainName, string RR, string Type, string Value);
+        Task<DomainRes> DelRecordsAsync(string RecordId);
+        Task<DomainRes> GetRecordsAsync(string SubDomain, string Type = "");
+        Task<DomainRes> UpdateRecordsAsync(string RecordId, string RR, string Type, string Value);
+
 
     }
 

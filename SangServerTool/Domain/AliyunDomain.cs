@@ -9,40 +9,40 @@ using System.Web;
 
 namespace SangServerTool.Domain
 {
+    /// <summary>
+    /// 阿里云域名解析管理
+    /// 文档 https://help.aliyun.com/document_detail/29771.html
+    /// 签名 https://help.aliyun.com/document_detail/29747.html
+    /// </summary>
     public class AliyunDomain : IDomain
     {
         private readonly string _AccessKeyId;
         private readonly string _AccessKeySecret;
-        private readonly string _Endpoint;
         private readonly string _Host = "https://alidns.aliyuncs.com/";
 
-        /*
-         * 造成此问题的主要原因是参数没有严格按照大小写排序。
-         * 在使用 C#/.Net 调用 OpenAPI 时，在签名算法中，如果使用 SortedDictionary 来对参数排序，需要严格按照大小写排序。可参考以下代码：
-         * SortedDictionaryparameters = new SortedDictionary(StringComparer.Ordinal);
-         */
-
-        public AliyunDomain(string accessKeyId, string accessKeySecret, string endpoint = "")
+        public AliyunDomain(string accessKeyId, string accessKeySecret)
         {
             _AccessKeyId = accessKeyId;
             _AccessKeySecret = accessKeySecret;
-            _Endpoint = endpoint;
         }
 
         /// <summary>
-        /// 获取子域名解析记录列表
-        /// DOC https://help.aliyun.com/document_detail/29778.html
-        /// http(s)://alidns.aliyuncs.com/?Action=DescribeSubDomainRecords
+        /// 修改解析记录
         /// </summary>
-        /// <param name="SubDomain"></param>
-        /// <param name="Type">解析类型 A、MX、CNAME、TXT、REDIRECT_URL、FORWORD_URL、NS、AAAA、SRV</param>
-        /// <returns>域名解析信息</returns>
-        public async Task<DomainRes> GetRecordsAsync(string SubDomain, string Type="")
+        /// <param name="DomainName">域名</param>
+        /// <param name="RR">记录</param>
+        /// <param name="Type">类型</param>
+        /// <param name="Value">记录值</param>
+        /// <returns>域名设置信息</returns>
+        public async Task<DomainRes> UpdateRecordsAsync(string RecordId, string RR, string Type, string Value)
         {
+
             var parameters = new Dictionary<string, string>();
-            parameters.Add("Action", "DescribeSubDomainRecords");
-            parameters.Add("SubDomain", SubDomain);
-            if(!string.IsNullOrEmpty(Type)) parameters.Add("Type", Type);
+            parameters.Add("Action", "UpdateDomainRecord");
+            parameters.Add("RecordId", RecordId);
+            parameters.Add("RR", RR);
+            parameters.Add("Type", Type);
+            parameters.Add("Value", Value);
 
             JsonNode json;
             try
@@ -51,38 +51,111 @@ namespace SangServerTool.Domain
                 var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
                 json = JsonNode.Parse(jsonstring)!;
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 //请求或转换异常
                 return new DomainRes(false, ex.Message);
             }
 
             // 返回有异常
-            if (json["TotalCount"] is null) {
+            if (json["RecordId"] is null)
+            {
+                return new DomainRes(false, "返回数据异常");
+            }
+
+            return new DomainRes(true, "ok", json["RecordId"].ToString());
+        }
+
+        /// <summary>
+        /// 删除解析记录
+        /// </summary>
+        /// <param name="RecordId">解析记录的ID</param>
+        /// <returns></returns>
+        public async Task<DomainRes> DelRecordsAsync(string RecordId)
+        {
+
+            var parameters = new Dictionary<string, string>();
+            parameters.Add("Action", "DeleteDomainRecord");
+            parameters.Add("RecordId", RecordId);
+
+
+            JsonNode json;
+            try
+            {
+                using var client = new HttpClient();
+                var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
+                json = JsonNode.Parse(jsonstring)!;
+            }
+            catch (Exception ex)
+            {
+                //请求或转换异常
+                return new DomainRes(false, ex.Message);
+            }
+
+            // 返回有异常
+            if (json["RecordId"] is null)
+            {
+                return new DomainRes(false, "返回数据异常");
+            }
+
+            return new DomainRes(true, "ok", json["RecordId"].ToString());
+        }
+
+        /// <summary>
+        /// 获取子域名解析记录列表
+        /// </summary>
+        /// <param name="SubDomain"></param>
+        /// <param name="Type">解析类型 A、MX、CNAME、TXT、REDIRECT_URL、FORWORD_URL、NS、AAAA、SRV</param>
+        /// <returns>域名解析信息</returns>
+        public async Task<DomainRes> GetRecordsAsync(string SubDomain, string Type = "")
+        {
+            var parameters = new Dictionary<string, string>();
+            parameters.Add("Action", "DescribeSubDomainRecords");
+            parameters.Add("SubDomain", SubDomain);
+            if (!string.IsNullOrEmpty(Type)) parameters.Add("Type", Type);
+
+            JsonNode json;
+            try
+            {
+                using var client = new HttpClient();
+                var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
+                json = JsonNode.Parse(jsonstring)!;
+            }
+            catch (Exception ex)
+            {
+                //请求或转换异常
+                return new DomainRes(false, ex.Message);
+            }
+
+            // 返回有异常
+            if (json["TotalCount"] is null)
+            {
                 return new DomainRes(false, "返回数据异常");
             }
 
             // 有解析数据返回解析结果
             if ((int)json["TotalCount"]! > 0)
             {
-                var temp = json["DomainRecords"]!["Record"]![0]; 
+                var temp = json["DomainRecords"]!["Record"]![0];
                 return new DomainRes(true, "ok", temp["RecordId"]!.ToString(), temp["Value"]!.ToString());
 
             }
 
             // 不存在解析信息
             return new DomainRes(true);
-            
+
         }
 
         /// <summary>
         /// 添加域名解析
         /// </summary>
-        /// <param name="DomainName"></param>
-        /// <param name="RR"></param>
-        /// <param name="Type"></param>
-        /// <param name="Value"></param>
+        /// <param name="DomainName">域名</param>
+        /// <param name="RR">记录</param>
+        /// <param name="Type">类型</param>
+        /// <param name="Value">记录值</param>
         /// <returns>域名设置信息</returns>
-        public async Task<DomainRes> AddRecordsAsync(string DomainName, string RR,string Type,string Value) {
+        public async Task<DomainRes> AddRecordsAsync(string DomainName, string RR, string Type, string Value)
+        {
 
             var parameters = new Dictionary<string, string>();
             parameters.Add("Action", "AddDomainRecord");
@@ -110,7 +183,7 @@ namespace SangServerTool.Domain
                 return new DomainRes(false, "返回数据异常");
             }
 
-            return new DomainRes(true,"ok", json["RecordId"].ToString());
+            return new DomainRes(true, "ok", json["RecordId"].ToString());
         }
 
         /// <summary>
@@ -119,7 +192,8 @@ namespace SangServerTool.Domain
         /// <param name="parameters">参数，非公共</param>
         /// <param name="method">请求类型</param>
         /// <returns></returns>
-        private string SignUrl(Dictionary<string, string> parameters, HttpMethod method) {
+        private string SignUrl(Dictionary<string, string> parameters, HttpMethod method)
+        {
             parameters.Add("Format", "JSON");
             parameters.Add("Version", "2015-01-09");
             parameters.Add("SignatureMethod", "HMAC-SHA1");
