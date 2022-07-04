@@ -49,7 +49,7 @@ namespace SangServerTool.Tool
             }
             catch (Exception ex)
             {
-                Console.WriteLine("登录账户：" + ex.Message);
+                Console.WriteLine("登录申请账户：" + ex.Message);
                 return 1;
             }
 
@@ -66,15 +66,77 @@ namespace SangServerTool.Tool
             }
             catch (Exception ex)
             {
-                Console.WriteLine("提交申请：" + ex.Message);
+                Console.WriteLine("提交证书申请：" + ex.Message);
                 return 1;
             }
 
+            //进行域名TXT信息设置
+            string[] rrdomain = Utils.GetRRDomain(cer_info.domains, cer_info.basedomain);
+            string[] RecordIds = new string[rrdomain.Length];
 
-            await Task.Delay(100);
-            Console.WriteLine(opt.ToString());
-            return 1;
+            var al = new AliyunDomain(config["Access:AK"], config["Access:SK"]);
+            for (var i = 0; i < rrdomain.Length; i++)
+            {
+                Console.WriteLine($"添加解析验证：{rrdomain[i]}\tTXT\t{DnsTask.dnsTxt[i]}");
+                var req = await al.AddRecordsAsync(cer_info.basedomain, rrdomain[i], "TXT", DnsTask.dnsTxt[i]);
+                if (!req.Success)
+                {
+                    Console.WriteLine("域名解析出错：" + req.Msg);
+                    return 1;
+                }
+                RecordIds[i] = req.Id;
+            }
+
+            //进行验证
+            Console.WriteLine("准备验证域名，请稍后");
+            await Task.Delay(20);
+
+            int retry = 0;
+            int ok;
+            do
+            {
+                ok = 0;
+                foreach (var challenge in DnsTask.dnsChallenge)
+                {
+                    var result = await challenge.Validate();
+    
+                    ok += result.Status == Certes.Acme.Resource.ChallengeStatus.Valid ? 1 : 0;
+                }
+
+                retry++;
+                // 延时后重试
+                await Task.Delay(opt.Delay);
+            } while (retry < opt.Retry && ok != rrdomain.Length);
+
+            //删除TXT记录
+            Console.WriteLine("验证域名结束\n清理用于验证的TXT记录");
+            foreach (var record in RecordIds)
+            {
+                await al.DelRecordsAsync(record);
+            }
+
+
+            if (ok != rrdomain.Length) {
+                Console.WriteLine($"验证域名出错：域名TXT记录未全部验证通过，{ok}/{rrdomain.Length}");
+                return 1;
+            }
+
+            //生成证书
+            IKey privateKey = File.Exists(cer_info.privatekey) ? KeyFactory.FromPem(File.ReadAllText(cer_info.privatekey)) : KeyFactory.NewKey(KeyAlgorithm.RS256);
+            if (!File.Exists(cer_info.privatekey))
+            {
+                string pem = privateKey.ToPem();
+                File.WriteAllText(cer_info.privatekey, pem);
+            }
+            var cert = await DnsTask.order.Generate(cer_csr, privateKey);
+
+            File.WriteAllText(cer_info.cerpath, cert.ToPem());
+
+            Console.WriteLine("证书申请成功");
+
+            return 0;
         }
+
 
         /// <summary>
         /// 获取DNS验证信息
@@ -109,7 +171,7 @@ namespace SangServerTool.Tool
         public static async Task<AcmeAccount> getAcmeAccountAsync(string email, string pemKeyFile)
         {
             string pemKey = File.Exists(pemKeyFile) ? await File.ReadAllTextAsync(pemKeyFile) : "";
-            var acme = pemKey == "" ? new AcmeContext(WellKnownServers.LetsEncryptStagingV2) : new AcmeContext(WellKnownServers.LetsEncryptStagingV2, KeyFactory.FromPem(pemKey));
+            var acme = pemKey == "" ? new AcmeContext(WellKnownServers.LetsEncryptV2) : new AcmeContext(WellKnownServers.LetsEncryptV2, KeyFactory.FromPem(pemKey));
             var account = pemKey == "" ? await acme.NewAccount(email, true) : await acme.Account();
 
             // 若没有账户，则保存一下账户的KEY

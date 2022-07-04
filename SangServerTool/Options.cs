@@ -14,6 +14,18 @@ namespace SangServerTool
         /// </summary>
         [Option('c', "config", Required = true, HelpText = "Set config json file.")]
         public string? ConfigFile { get; set; }
+
+        /// <summary>
+        /// DNS验证重试多少次？
+        /// </summary>
+        [Option("retry", Default = 2, HelpText = "How many retries? ")]
+        public int Retry { get; set; }
+
+        /// <summary>
+        /// DNS验证重试多少次？
+        /// </summary>
+        [Option("delay", Default = 30, HelpText = "How many seconds to retry? ")]
+        public int Delay { get; set; }
     }
 
 
