@@ -3,6 +3,7 @@ using SangServerTool.Domain;
 using Microsoft.Extensions.Configuration;
 using Certes;
 using Certes.Acme;
+using Microsoft.Extensions.Logging;
 
 namespace SangServerTool.Tool
 {
@@ -14,7 +15,7 @@ namespace SangServerTool.Tool
     public class SSL
     {
         static readonly string runPath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-        public async static Task<int> Run(AUTO_SSL opt)
+        public async static Task<int> Run(AUTO_SSL opt, ILogger logger)
         {
             Console.WriteLine($"配置文件：{opt.ConfigFile}");
             if (!File.Exists(opt.ConfigFile))

@@ -1,5 +1,6 @@
 ﻿using SangServerTool.Domain;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace SangServerTool.Tool
 {
@@ -8,12 +9,13 @@ namespace SangServerTool.Tool
     /// </summary>
     public class DDNS
     {
-        public async static Task<int> Run(AUTO_DDNS opt)
+
+        public async static Task<int> Run(AUTO_DDNS opt,ILogger logger)
         {
-            Console.WriteLine($"配置文件：{opt.ConfigFile}");
+            logger.LogInformation($"配置文件：{opt.ConfigFile}");
             if (!File.Exists(opt.ConfigFile))
             {
-                Console.WriteLine("配置文件不存在");
+                logger.LogWarning("配置文件不存在");
                 return 1;
             }
 
@@ -23,14 +25,14 @@ namespace SangServerTool.Tool
 
             var al = new AliyunDomain(config["Access:AK"], config["Access:SK"]);
 
-            Console.WriteLine($"检查解析：{config["DDNS:ddns"]}");
+            logger.LogInformation($"检查域名当前解析：{config["DDNS:ddns"]}");
 
             // 检查DDNS的解析信息
             var Record = await al.GetRecordsAsync(config["DDNS:ddns"], "");
             //出错
             if (!Record.Success)
             {
-                Console.WriteLine(Record.Msg);
+                logger.LogError(Record.Msg);
                 return 1;
             }
 
@@ -42,13 +44,13 @@ namespace SangServerTool.Tool
                     var DelRecord = await al.DelRecordsAsync(Record.Id);
                     if (DelRecord.Success)
                     {
-                        Console.WriteLine($"删除成功：{DelRecord.Id}");
+                        logger.LogInformation($"删除DDNS解析成功：{DelRecord.Id}");
                         return 0;
                     }
-                    Console.WriteLine($"删除失败：{DelRecord.Msg}");
+                    logger.LogError($"删除DDNS解析失败：{DelRecord.Msg}");
                     return 1;
                 }
-                Console.WriteLine($"无需删除");
+                logger.LogInformation($"无需删除记录");
                 return 0;
             }
 
@@ -58,17 +60,17 @@ namespace SangServerTool.Tool
             //检查IP是否合规
             if (!System.Net.IPAddress.TryParse(nowip, out _))
             {
-                Console.WriteLine("设置解析IP配置获取失败");
+                logger.LogError($"设置解析IP配置获取失败，获取的IP信息 {nowip} 不是有效的IP地址");
                 return 1;
             }
 
-            Console.WriteLine($"设置解析：{nowip}");
+            logger.LogInformation($"获取IP地址为：{nowip}");
 
             //获取 RR 设置
             string RR = Utils.GetRRDdns(config["DDNS:ddns"], config["DDNS:basedomain"]);
             if (string.IsNullOrEmpty(RR))
             {
-                Console.WriteLine("配置解析：配置的DDNS解析或Domain域名异常");
+                logger.LogError("配置解析：配置的DDNS解析或Domain域名异常");
                 return 1;
             }
 
@@ -80,33 +82,33 @@ namespace SangServerTool.Tool
             {
 
 
-                Console.WriteLine($"准备解析：{RR}\t{Type}\t{nowip}");
+                logger.LogInformation($"准备解析：{RR}\t{Type}\t{nowip}");
                 var AddRecord = await al.AddRecordsAsync(config["DDNS:basedomain"], RR, Type, nowip);
                 if (AddRecord.Success)
                 {
-                    Console.WriteLine($"解析成功：{AddRecord.Id}");
+                    logger.LogInformation($"新建解析成功：{AddRecord.Id}");
                     return 0;
                 }
-                Console.WriteLine($"解析失败：{AddRecord.Msg}");
+                logger.LogError($"新建解析失败：{AddRecord.Msg}");
                 return 1;
             }
 
-            Console.WriteLine($"解析地址：{Record.Value}");
+            logger.LogInformation($"原解析地址为：{Record.Value}");
 
             //修改记录
             if (Record.Value != nowip)
             {
-                Console.WriteLine("修改记录");
+                logger.LogDebug("修改解析记录");
                 var UpdateRecord = await al.UpdateRecordsAsync(Record.Id, RR, Type, nowip);
                 if (UpdateRecord.Success)
                 {
-                    Console.WriteLine($"修改成功：{UpdateRecord.Id}");
+                    logger.LogInformation($"修改解析成功：{UpdateRecord.Id}");
                     return 0;
                 }
-                Console.WriteLine($"修改失败：{UpdateRecord.Msg}");
+                logger.LogError($"修改解析失败：{UpdateRecord.Msg}");
                 return 1;
             }
-            Console.WriteLine("无需处理");
+            logger.LogInformation("无需处理");
             return 0;
         }
     }
