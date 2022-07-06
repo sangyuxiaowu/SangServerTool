@@ -14,13 +14,12 @@ namespace SangServerTool.Tool
     /// </summary>
     public class SSL
     {
-        static readonly string runPath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
         public async static Task<int> Run(AUTO_SSL opt, ILogger logger)
         {
-            Console.WriteLine($"配置文件：{opt.ConfigFile}");
+            logger.LogInformation($"配置文件：{opt.ConfigFile}");
             if (!File.Exists(opt.ConfigFile))
             {
-                Console.WriteLine("配置文件不存在");
+                logger.LogError("配置文件不存在");
                 return 1;
             }
             IConfigurationBuilder configBuilder = new ConfigurationBuilder();
@@ -39,7 +38,7 @@ namespace SangServerTool.Tool
             //获取是否还有5天内就过期
             if (isHaved && !Utils.isCerWillExp(cer_info.cerpath))
             {
-                Console.WriteLine("无需处理");
+                logger.LogInformation("无需处理");
                 return 0;
             }
 
@@ -50,7 +49,7 @@ namespace SangServerTool.Tool
             }
             catch (Exception ex)
             {
-                Console.WriteLine("登录申请账户：" + ex.Message);
+                logger.LogInformation("登录申请账户：" + ex.Message);
                 return 1;
             }
 
@@ -67,7 +66,7 @@ namespace SangServerTool.Tool
             }
             catch (Exception ex)
             {
-                Console.WriteLine("提交证书申请：" + ex.Message);
+                logger.LogError("提交申请失败：" + ex.Message);
                 return 1;
             }
 
@@ -78,24 +77,27 @@ namespace SangServerTool.Tool
             var al = new AliyunDomain(config["Access:AK"], config["Access:SK"]);
             for (var i = 0; i < rrdomain.Length; i++)
             {
-                Console.WriteLine($"添加解析验证：{rrdomain[i]}\tTXT\t{DnsTask.dnsTxt[i]}");
+                logger.LogInformation($"添加解析验证：{rrdomain[i]}\tTXT\t{DnsTask.dnsTxt[i]}");
                 var req = await al.AddRecordsAsync(cer_info.basedomain, rrdomain[i], "TXT", DnsTask.dnsTxt[i]);
                 if (!req.Success)
                 {
-                    Console.WriteLine("域名解析出错：" + req.Msg);
+                    logger.LogError("添加域名解析出错：" + req.Msg);
                     return 1;
                 }
                 RecordIds[i] = req.Id;
             }
 
             //进行验证
-            Console.WriteLine("准备验证域名，请稍后");
+            logger.LogInformation("准备验证域名，请稍后 ...");
             await Task.Delay(20);
 
             int retry = 0;
             int ok;
             do
             {
+                if (retry > 0) {
+                    logger.LogInformation($"正在重试 {retry.ToString()}/{opt.Retry.ToString()}");
+                }
                 ok = 0;
                 foreach (var challenge in DnsTask.dnsChallenge)
                 {
@@ -110,7 +112,7 @@ namespace SangServerTool.Tool
             } while (retry < opt.Retry && ok != rrdomain.Length);
 
             //删除TXT记录
-            Console.WriteLine("验证域名结束\n清理用于验证的TXT记录");
+            logger.LogInformation("执行域名验证结束，清理用于验证的TXT记录");
             foreach (var record in RecordIds)
             {
                 await al.DelRecordsAsync(record);
@@ -118,7 +120,7 @@ namespace SangServerTool.Tool
 
 
             if (ok != rrdomain.Length) {
-                Console.WriteLine($"验证域名出错：域名TXT记录未全部验证通过，{ok}/{rrdomain.Length}");
+                logger.LogError($"验证域名出错：域名TXT记录未全部验证通过，{ok}/{rrdomain.Length}");
                 return 1;
             }
 
@@ -133,7 +135,7 @@ namespace SangServerTool.Tool
 
             File.WriteAllText(cer_info.cerpath, cert.ToPem());
 
-            Console.WriteLine("证书申请成功");
+            logger.LogInformation("证书申请成功");
 
             return 0;
         }

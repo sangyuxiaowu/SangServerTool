@@ -203,7 +203,8 @@ namespace SangServerTool.Domain
             parameters.Add("AccessKeyId", _AccessKeyId);
 
             var canonicalizedQueryString = string.Join("&",
-                parameters.OrderBy(x => x.Key)
+                //parameters.OrderBy(x => x.Key)
+                new SortedDictionary<string, string>(parameters, StringComparer.Ordinal)
                 .Select(x => PercentEncode(x.Key) + "=" + PercentEncode(x.Value)));
             var stringToSign = method.ToString().ToUpper() + "&%2F&" + PercentEncode(canonicalizedQueryString);
             var keyBytes = Encoding.UTF8.GetBytes(_AccessKeySecret + "&");
