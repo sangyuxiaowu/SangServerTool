@@ -48,7 +48,8 @@ namespace SangServerTool.Domain
             try
             {
                 using var client = new HttpClient();
-                var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
+                var apiResponse = await client.GetAsync(SignUrl(parameters, HttpMethod.Get));
+                var jsonstring = await apiResponse.Content.ReadAsStringAsync();
                 json = JsonNode.Parse(jsonstring)!;
             }
             catch (Exception ex)
@@ -60,7 +61,7 @@ namespace SangServerTool.Domain
             // 返回有异常
             if (json["RecordId"] is null)
             {
-                return new DomainRes(false, "返回数据异常");
+                return new DomainRes(false, "返回数据异常"+ json.ToString());
             }
 
             return new DomainRes(true, "ok", json["RecordId"].ToString());
@@ -83,7 +84,8 @@ namespace SangServerTool.Domain
             try
             {
                 using var client = new HttpClient();
-                var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
+                var apiResponse = await client.GetAsync(SignUrl(parameters, HttpMethod.Get));
+                var jsonstring = await apiResponse.Content.ReadAsStringAsync();
                 json = JsonNode.Parse(jsonstring)!;
             }
             catch (Exception ex)
@@ -95,7 +97,7 @@ namespace SangServerTool.Domain
             // 返回有异常
             if (json["RecordId"] is null)
             {
-                return new DomainRes(false, "返回数据异常");
+                return new DomainRes(false, "返回数据异常" + json.ToString());
             }
 
             return new DomainRes(true, "ok", json["RecordId"].ToString());
@@ -118,7 +120,8 @@ namespace SangServerTool.Domain
             try
             {
                 using var client = new HttpClient();
-                var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
+                var apiResponse = await client.GetAsync(SignUrl(parameters, HttpMethod.Get));
+                var jsonstring = await apiResponse.Content.ReadAsStringAsync();
                 json = JsonNode.Parse(jsonstring)!;
             }
             catch (Exception ex)
@@ -130,7 +133,7 @@ namespace SangServerTool.Domain
             // 返回有异常
             if (json["TotalCount"] is null)
             {
-                return new DomainRes(false, "返回数据异常");
+                return new DomainRes(false, "返回数据异常" + json.ToString());
             }
 
             // 有解析数据返回解析结果
@@ -168,7 +171,8 @@ namespace SangServerTool.Domain
             try
             {
                 using var client = new HttpClient();
-                var jsonstring = await client.GetStringAsync(SignUrl(parameters, HttpMethod.Get));
+                var apiResponse = await client.GetAsync(SignUrl(parameters, HttpMethod.Get));
+                var jsonstring = await apiResponse.Content.ReadAsStringAsync();
                 json = JsonNode.Parse(jsonstring)!;
             }
             catch (Exception ex)
@@ -180,7 +184,7 @@ namespace SangServerTool.Domain
             // 返回有异常
             if (json["RecordId"] is null)
             {
-                return new DomainRes(false, "返回数据异常");
+                return new DomainRes(false, "返回数据异常" + json.ToString());
             }
 
             return new DomainRes(true, "ok", json["RecordId"].ToString());
