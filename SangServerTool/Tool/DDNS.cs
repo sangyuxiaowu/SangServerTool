@@ -19,12 +19,6 @@ namespace SangServerTool.Tool
                 return 1;
             }
 
-            if (opt.Delay > 0)
-            {
-                logger.LogInformation($"延迟 {opt.Delay.ToString()} 秒执行");
-                await Task.Delay(1000 * opt.Delay);
-            }
-
             IConfigurationBuilder configBuilder = new ConfigurationBuilder();
             configBuilder.AddJsonFile(opt.ConfigFile, optional: false, reloadOnChange: false);
             IConfigurationRoot config = configBuilder.Build();
