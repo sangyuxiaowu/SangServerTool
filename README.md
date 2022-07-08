@@ -57,6 +57,7 @@
 | 参数 | 说明|
 | --- | --- |
 | -c, --config  | Required. Set config json file. <br> 设置配置文件路径 |
+| --delay |  (Default: 0) How many seconds delay? <br> 启动后延迟多少秒进行检查处理，默认为 0，防止开机启动过早导致出现一些问题 |
 | --del |  (Default: false) Is delete DDNS? <br>删除配置文件中设置的DDNS域名解析，默认为 false ，如果为 true，则尝试删除后退出 |
 | --v6 | (Default: false) Is ipv6? <br>使用 IPv6 来解析，默认获取 IPv4 |
 | --ip |  (Default: ) If set will be used. Otherwise automatically obtained.<br>You can set 'ifconfig', It will check from 'https://ifconfig.me/ip' to get you Internet IP. <br>默认为空字符，如果传入了指定 IP ，则使用这个 IP 来解析。<br>可以传入 'ifconfig' 值，该值则表示通过网络获取网络出口 IP 来解析
@@ -97,7 +98,7 @@ SangServerTool ddns -c "test.json" --del=1
 | --- | --- |
 | -c, --config  | Required. Set config json file. <br> 设置配置文件路径 |
 | --retry | (Default: 2) How many retries? <br> 验证域名时重试几次，默认2次 |
-| --delay | (Default: 30) How many seconds to retry? <br> 验证域名时重试间隔多少秒，默认30秒 |
+| --delay | (Default: 10) How many seconds to retry? <br> 验证域名时重试间隔多少秒，默认10秒 |
 
 > 如：申请域名重试 3 次
 

@@ -22,9 +22,9 @@ namespace SangServerTool
         public int Retry { get; set; }
 
         /// <summary>
-        /// DNS验证重试多少次？
+        /// DNS验证失败等待多少秒重试？
         /// </summary>
-        [Option("delay", Default = 30, HelpText = "How many seconds to retry? ")]
+        [Option("delay", Default = 10, HelpText = "How many seconds to retry? ")]
         public int Delay { get; set; }
     }
 

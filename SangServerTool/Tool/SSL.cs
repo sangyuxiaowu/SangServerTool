@@ -89,7 +89,7 @@ namespace SangServerTool.Tool
 
             //进行验证
             logger.LogInformation("准备验证域名，请稍后 ...");
-            await Task.Delay(20);
+            await Task.Delay(2000);
 
             int retry = 0;
             int ok;
@@ -108,7 +108,7 @@ namespace SangServerTool.Tool
 
                 retry++;
                 // 延时后重试
-                await Task.Delay(opt.Delay);
+                await Task.Delay(1000*opt.Delay);
             } while (retry < opt.Retry && ok != rrdomain.Length);
 
             //删除TXT记录
