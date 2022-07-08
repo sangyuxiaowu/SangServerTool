@@ -42,6 +42,12 @@ namespace SangServerTool
         public string? ConfigFile { get; set; }
 
         /// <summary>
+        /// 延迟多少秒执行
+        /// </summary>
+        [Option("delay", Default = 0, HelpText = "How many seconds delay?")]
+        public int Delay { get; set; }
+
+        /// <summary>
         /// 是否为IPv6地址
         /// </summary>
         [Option("del", Default = false, HelpText = "Is delete DDNS?")]
