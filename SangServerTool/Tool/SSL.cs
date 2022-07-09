@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Certes;
 using Certes.Acme;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace SangServerTool.Tool
 {
@@ -137,6 +138,37 @@ namespace SangServerTool.Tool
 
             logger.LogInformation("证书申请成功");
 
+            // 脚本文件存在，执行
+            if (File.Exists(cer_info.okshell))
+            {
+                //创建一个ProcessStartInfo对象 使用系统shell 指定命令和参数 设置标准输出
+                var psi = new ProcessStartInfo(cer_info.okshell) { RedirectStandardOutput = true };
+                //启动
+                var proc = Process.Start(psi);
+                if (proc == null)
+                {
+                    logger.LogError("证书更新后，后续处理脚本启动失败");
+                }
+                else
+                {
+                    logger.LogInformation("-------------Start read standard output--------------");
+                    //开始读取
+                    using (var sr = proc.StandardOutput)
+                    {
+                        while (!sr.EndOfStream)
+                        {
+                            logger.LogInformation(sr.ReadLine());
+                        }
+
+                        if (!proc.HasExited)
+                        {
+                            proc.Kill();
+                        }
+                    }
+                    logger.LogInformation("---------------Read end------------------");
+                }
+            }
+
             return 0;
         }
 
@@ -223,6 +255,10 @@ namespace SangServerTool.Tool
             /// 证书的主域名信息
             /// </summary>
             public string basedomain { get; set; }
+            /// <summary>
+            /// 证书新建或更新成功后调用的脚本文件
+            /// </summary>
+            public string okshell { get; set; }
         }
 
 

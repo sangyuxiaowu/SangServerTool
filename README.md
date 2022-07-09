@@ -9,7 +9,12 @@
 
 提供独立的 [linux-x64、linux-arm、linux-arm64、win-x64 下载](../../releases/latest)。其他平台可自行通过源码编译发布。 
 
-这个服务的启动一般来说不需要一直运行。DDNS可以在设备开启时检测一次，以后每间隔一段时间检测一次，如一小时。SSL证书申请，可以每天0点固定检查一次即可，将要过期时，程序会自动进行续期，更新证书。注意 nginx 等服务需要重新加载一下证书。
+这个服务的启动一般来说不需要一直运行。DDNS可以在设备开启时检测一次，以后每间隔一段时间检测一次，如一小时。
+
+SSL证书申请，可以每天0点固定检查一次即可，将要过期时，程序会自动进行续期，更新证书。
+注意 nginx 等服务需要重新加载一下证书，可配置 `Certificate:okshell` 来实现申请成功调用你指定的脚本文件。
+
+[【DDNS 开机启动计划任务示例】](doc/DDNS.md) | [【SSL计划任务示例】](doc/SSL.md)
 
 # 使用说明
 
@@ -32,7 +37,8 @@
     "cerpath": "/usr/opt/ssl/domain.com.pem",  // 域名证书路径或要将新申请的证书放哪里
     "privatekey": "/usr/opt/ssl/domain.com.key", // 证书私钥路径或要将生成的私钥放哪里
     "domains": "*.dev.domain.com dev.domain.com domain.com ", // 证书的DNS Name，多个用空格隔开
-    "basedomain": "domain.com" // 主域名
+    "basedomain": "domain.com", // 主域名
+    "okshell": "/home/myname/.tools/restartnginx.sh" // 证书更新后执行的脚本文件
   },
   "ACME": {
     "email": "my@domain.com",  // ACME 申请证书的邮箱
@@ -111,6 +117,7 @@ SangServerTool ssl -c "test.json" --retry=3
 
 - 如果是新申请的只需要配置好证书 `cerpath` 和证书私钥 `privatekey` 的存放路径，程序会自行生成。若已经有证书会私钥配置好其位置会自行更新证书或使用当前已有的私钥。
 - `domains` 支持多个域名，使用空格隔开
+- `okshell` 证书更新后执行的脚本文件，如果服务器不能热加载证书，记得配置好，通过脚本文件进行重启服务
 
 在配置 `ACME` 信息时：
 
