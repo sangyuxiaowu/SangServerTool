@@ -10,7 +10,7 @@ namespace SangServerTool.Domain
     /// <summary>
     /// 腾讯云域名解析管理
     /// 文档 https://cloud.tencent.com/document/api/1427/56153
-    /// 签名 https://help.aliyun.com/document_detail/29747.html
+    /// 签名 https://cloud.tencent.com/document/api/1427/56189
     /// </summary>
     public class TencentCloudDomain : IDomain
     {
