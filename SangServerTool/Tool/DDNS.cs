@@ -29,12 +29,18 @@ namespace SangServerTool.Tool
             configBuilder.AddJsonFile(opt.ConfigFile, optional: false, reloadOnChange: false);
             IConfigurationRoot config = configBuilder.Build();
 
-            var al = new AliyunDomain(config["Access:AK"], config["Access:SK"]);
+
+            IDomain domain = config["Access:T"] switch
+            {
+                "T" => new TencentCloudDomain(config["Access:AK"], config["Access:SK"]),
+                _ => new AliyunDomain(config["Access:AK"], config["Access:SK"])
+            };
+            
 
             logger.LogInformation($"检查域名当前解析：{config["DDNS:ddns"]}");
 
             // 检查DDNS的解析信息
-            var Record = await al.GetRecordsAsync(config["DDNS:ddns"], "");
+            var Record = await domain.GetRecordsAsync(config["DDNS:ddns"], "");
             //出错
             if (!Record.Success)
             {
@@ -47,7 +53,7 @@ namespace SangServerTool.Tool
             {
                 if (Record.Id != "")
                 {
-                    var DelRecord = await al.DelRecordsAsync(Record.Id);
+                    var DelRecord = await domain.DelRecordsAsync(Record.Id);
                     if (DelRecord.Success)
                     {
                         logger.LogInformation($"删除DDNS解析成功：{DelRecord.Id}");
@@ -89,7 +95,7 @@ namespace SangServerTool.Tool
 
 
                 logger.LogInformation($"准备解析：{RR}\t{Type}\t{nowip}");
-                var AddRecord = await al.AddRecordsAsync(config["DDNS:basedomain"], RR, Type, nowip);
+                var AddRecord = await domain.AddRecordsAsync(config["DDNS:basedomain"], RR, Type, nowip);
                 if (AddRecord.Success)
                 {
                     logger.LogInformation($"新建解析成功：{AddRecord.Id}");
@@ -105,7 +111,7 @@ namespace SangServerTool.Tool
             if (Record.Value != nowip)
             {
                 logger.LogDebug("修改解析记录");
-                var UpdateRecord = await al.UpdateRecordsAsync(Record.Id, RR, Type, nowip);
+                var UpdateRecord = await domain.UpdateRecordsAsync(Record.Id, RR, Type, nowip);
                 if (UpdateRecord.Success)
                 {
                     logger.LogInformation($"修改解析成功：{UpdateRecord.Id}");
