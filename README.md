@@ -125,3 +125,9 @@ SangServerTool ssl -c "test.json" --retry=3
 - 如果之前已有账户，可以使用已有的账户私钥，配置给  `account`
 
 关于 `CSR` ，这段配不配都无所谓，毕竟是免费的证书，也不会生效，只是验证了域名的归属权。
+
+# 支持
+
+欢迎喜欢编程的朋友，关注我的微信公众号：桑榆肖物
+
+![](https://open.weixin.qq.com/qr/code?username=gh_c874018d0317)
