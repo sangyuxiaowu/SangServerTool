@@ -206,7 +206,11 @@ namespace SangServerTool.Tool
         public static async Task<AcmeAccount> getAcmeAccountAsync(string email, string pemKeyFile)
         {
             string pemKey = File.Exists(pemKeyFile) ? await File.ReadAllTextAsync(pemKeyFile) : "";
+#if DEBUG
+            var acme = pemKey == "" ? new AcmeContext(WellKnownServers.LetsEncryptStagingV2) : new AcmeContext(WellKnownServers.LetsEncryptStagingV2, KeyFactory.FromPem(pemKey));
+# else
             var acme = pemKey == "" ? new AcmeContext(WellKnownServers.LetsEncryptV2) : new AcmeContext(WellKnownServers.LetsEncryptV2, KeyFactory.FromPem(pemKey));
+#endif
             var account = pemKey == "" ? await acme.NewAccount(email, true) : await acme.Account();
 
             // 若没有账户，则保存一下账户的KEY
