@@ -47,12 +47,12 @@ namespace SangServerTool
         /// 获取电脑外网IP
         /// </summary>
         /// <returns></returns>
-        public static string CurrentIPAddress() {
+        public static string CurrentIPAddressByWeb(bool isV6 = false) {
             using var client = new HttpClient();
             string ip = "";
             try
             {
-                ip = client.GetStringAsync("https://ifconfig.me/ip").Result;
+                ip = client.GetStringAsync($"https://{(isV6 ? "6" : "4")}.ipw.cn/").Result;
             }
             catch {
                 return ip;
