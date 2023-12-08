@@ -18,13 +18,13 @@ namespace SangServerTool
         /// <summary>
         /// DNS验证重试多少次？
         /// </summary>
-        [Option("retry", Default = 2, HelpText = "How many retries? ")]
+        [Option("retry", Default = 8, HelpText = "How many retries? ")]
         public int Retry { get; set; }
 
         /// <summary>
         /// DNS验证失败等待多少秒重试？
         /// </summary>
-        [Option("delay", Default = 10, HelpText = "How many seconds to retry? ")]
+        [Option("delay", Default = 5, HelpText = "How many seconds to retry? ")]
         public int Delay { get; set; }
     }
 

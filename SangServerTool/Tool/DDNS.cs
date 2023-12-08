@@ -67,7 +67,7 @@ namespace SangServerTool.Tool
             }
 
             var nowip = opt.IP == "" ? Utils.CurrentIPAddress(opt.IPV6)
-            : opt.IP == "ifconfig" ? Utils.CurrentIPAddress() : opt.IP;
+            : opt.IP == "ifconfig" ? Utils.CurrentIPAddressByWeb(opt.IPV6) : opt.IP;
 
             //检查IP是否合规
             if (!System.Net.IPAddress.TryParse(nowip, out _))

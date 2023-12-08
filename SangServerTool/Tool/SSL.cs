@@ -5,6 +5,8 @@ using Certes;
 using Certes.Acme;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Net;
+using System.Reflection;
 
 namespace SangServerTool.Tool
 {
@@ -43,10 +45,16 @@ namespace SangServerTool.Tool
                 return 0;
             }
 
+            if(cer_csr is null || cer_info is null || cer_acme is null)
+            {
+                logger.LogError("配置文件格式错误");
+                return 1;
+            }
+
             AcmeAccount acmeinfo;
             try
             {
-                acmeinfo = await getAcmeAccountAsync(cer_acme.email, cer_acme.account);
+                acmeinfo = await GetAcmeAccountAsync(cer_acme.email, cer_acme.account);
             }
             catch (Exception ex)
             {
@@ -59,11 +67,25 @@ namespace SangServerTool.Tool
             var orders = await orderListContext.Orders();
             //https://acme-staging-v02.api.letsencrypt.org/acme/order/59498234/3028278734
 
+            if (orders.Any())
+            {
+                foreach (var order in orders)
+                {
+                    // 打印订单
+                    logger.LogInformation($"订单：{order.Location}");
+                }
+                logger.LogInformation("已存在订单");
+                return 1;
+            }
+
             // 开始请求证书，获取DNS验证的配置信息
             DnsTask DnsTask;
             try
             {
-                DnsTask = await getDnsAuthInfoAsync(acmeinfo.acme, cer_info.domains);
+                DnsTask = await GetDnsAuthInfoAsync(acmeinfo.acme, cer_info.domains);
+
+                logger.LogInformation($"订单：{DnsTask.order.Location}");
+                DnsTask.dnsChallenge.ToList().ForEach(x => logger.LogInformation($"验证：{x.Location}"));
             }
             catch (Exception ex)
             {
@@ -92,17 +114,24 @@ namespace SangServerTool.Tool
             logger.LogInformation("准备验证域名，请稍后 ...");
             await Task.Delay(2000);
 
+            // 执行Validate
+            foreach (var challenge in DnsTask.dnsChallenge)
+            {
+                await challenge.Validate();
+            }
+
+            // 检查验证结果
             int retry = 0;
             int ok;
             do
             {
                 if (retry > 0) {
-                    logger.LogInformation($"正在重试 {retry.ToString()}/{opt.Retry.ToString()}");
+                    logger.LogInformation($"正在查询 {retry.ToString()}/{opt.Retry.ToString()}");
                 }
                 ok = 0;
                 foreach (var challenge in DnsTask.dnsChallenge)
                 {
-                    var result = await challenge.Validate();
+                    var result = await challenge.Resource();
     
                     ok += result.Status == Certes.Acme.Resource.ChallengeStatus.Valid ? 1 : 0;
                 }
@@ -179,22 +208,24 @@ namespace SangServerTool.Tool
         /// <param name="acme">ACME账户对象</param>
         /// <param name="domains">申请的域名信息，多个用空格隔开</param>
         /// <returns></returns>
-        public static async Task<DnsTask> getDnsAuthInfoAsync(AcmeContext acme, string domains)
+        public static async Task<DnsTask> GetDnsAuthInfoAsync(AcmeContext acme, string domains)
         {
-            string[] domain = domains.Split(' ');
-            var order = await acme.NewOrder(domain);
-            var authz = await order.Authorizations();
-            IChallengeContext[] dnsChallenges = new IChallengeContext[domain.Length];
-            string[] dnsTxts = new string[domain.Length];
-            int i = 0;
-            foreach (var z in authz)
+            var domainArray = domains.Split(' ');
+            var order = await acme.NewOrder(domainArray);
+            var authorizationContexts = await order.Authorizations();
+            var dnsChallenges = new IChallengeContext[domainArray.Length];
+            var dnsTxts = new string[domainArray.Length];
+
+            for (int i = 0; i < authorizationContexts.Count(); i++)
             {
-                dnsChallenges[i] = await z.Dns();
+                var authorizationContext = authorizationContexts.ElementAt(i);
+                dnsChallenges[i] = await authorizationContext.Dns();
                 dnsTxts[i] = acme.AccountKey.DnsTxt(dnsChallenges[i].Token);
-                i++;
             }
+
             return new DnsTask(dnsChallenges, order, dnsTxts);
         }
+
 
 
         /// <summary>
@@ -203,10 +234,14 @@ namespace SangServerTool.Tool
         /// <param name="email">邮箱</param>
         /// <param name="pemKeyFile">邮箱账户pem密钥文件地址</param>
         /// <returns></returns>
-        public static async Task<AcmeAccount> getAcmeAccountAsync(string email, string pemKeyFile)
+        public static async Task<AcmeAccount> GetAcmeAccountAsync(string email, string pemKeyFile)
         {
             string pemKey = File.Exists(pemKeyFile) ? await File.ReadAllTextAsync(pemKeyFile) : "";
+#if DEBUG
+            var acme = pemKey == "" ? new AcmeContext(WellKnownServers.LetsEncryptStagingV2) : new AcmeContext(WellKnownServers.LetsEncryptStagingV2, KeyFactory.FromPem(pemKey));
+# else
             var acme = pemKey == "" ? new AcmeContext(WellKnownServers.LetsEncryptV2) : new AcmeContext(WellKnownServers.LetsEncryptV2, KeyFactory.FromPem(pemKey));
+#endif
             var account = pemKey == "" ? await acme.NewAccount(email, true) : await acme.Account();
 
             // 若没有账户，则保存一下账户的KEY

@@ -66,7 +66,7 @@ SSL证书申请，可以每天0点固定检查一次即可，将要过期时，�
 | --delay |  (Default: 0) How many seconds delay? <br> 启动后延迟多少秒进行检查处理，默认为 0，防止开机启动过早导致出现一些问题 |
 | --del |  (Default: false) Is delete DDNS? <br>删除配置文件中设置的DDNS域名解析，默认为 false ，如果为 true，则尝试删除后退出 |
 | --v6 | (Default: false) Is ipv6? <br>使用 IPv6 来解析，默认获取 IPv4 |
-| --ip |  (Default: ) If set will be used. Otherwise automatically obtained.<br>You can set 'ifconfig', It will check from 'https://ifconfig.me/ip' to get you Internet IP. <br>默认为空字符，如果传入了指定 IP ，则使用这个 IP 来解析。<br>可以传入 'ifconfig' 值，该值则表示通过网络获取网络出口 IP 来解析
+| --ip |  (Default: ) If set will be used. Otherwise automatically obtained.<br>You can set 'ifconfig', It will check from 'https://ipw.cn/' to get you Internet IP. <br>默认为空字符，如果传入了指定 IP ，则使用这个 IP 来解析。<br>可以传入 'ifconfig' 值，该值则表示通过网络获取网络出口 IP 来解析
 
 > 如：使用本地的 IPv6 进行 DDNS 设置
 
