@@ -12,6 +12,7 @@ namespace SangServerTool.Tool
 
         public async static Task<int> Run(AUTO_DDNS opt,ILogger logger)
         {
+            logger.LogInformation($"开始执行：{DateTime.Now.ToString()}");
             logger.LogInformation($"配置文件：{opt.ConfigFile}");
             if (!File.Exists(opt.ConfigFile))
             {
