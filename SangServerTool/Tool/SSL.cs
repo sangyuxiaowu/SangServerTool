@@ -168,36 +168,7 @@ namespace SangServerTool.Tool
 
             logger.LogInformation("证书申请成功");
 
-            // 脚本文件存在，执行
-            if (File.Exists(cer_info.okshell))
-            {
-                //创建一个ProcessStartInfo对象 使用系统shell 指定命令和参数 设置标准输出
-                var psi = new ProcessStartInfo(cer_info.okshell) { RedirectStandardOutput = true };
-                //启动
-                var proc = Process.Start(psi);
-                if (proc == null)
-                {
-                    logger.LogError("证书更新后，后续处理脚本启动失败");
-                }
-                else
-                {
-                    logger.LogInformation("-------------Start read standard output--------------");
-                    //开始读取
-                    using (var sr = proc.StandardOutput)
-                    {
-                        while (!sr.EndOfStream)
-                        {
-                            logger.LogInformation(sr.ReadLine());
-                        }
-
-                        if (!proc.HasExited)
-                        {
-                            proc.Kill();
-                        }
-                    }
-                    logger.LogInformation("---------------Read end------------------");
-                }
-            }
+            Utils.RunShell(cer_info.okshell, logger);
 
             return 0;
         }

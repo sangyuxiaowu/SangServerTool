@@ -2,6 +2,8 @@
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using System.Net;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace SangServerTool
 {
@@ -97,5 +99,43 @@ namespace SangServerTool
             return "";
         }
 
+        /// <summary>
+        /// 执行shell脚本
+        /// </summary>
+        /// <param name="file">脚本文件</param>
+        /// <param name="logger">日志</param>
+        public static void RunShell(string file,ILogger logger)
+        {
+            // 脚本文件存在，执行
+            if (File.Exists(file))
+            {
+                //创建一个ProcessStartInfo对象 使用系统shell 指定命令和参数 设置标准输出
+                var psi = new ProcessStartInfo(file) { RedirectStandardOutput = true };
+                //启动
+                var proc = Process.Start(psi);
+                if (proc == null)
+                {
+                    logger.LogError("处理脚本启动失败");
+                }
+                else
+                {
+                    logger.LogInformation("-------------Start read standard output--------------");
+                    //开始读取
+                    using (var sr = proc.StandardOutput)
+                    {
+                        while (!sr.EndOfStream)
+                        {
+                            logger.LogInformation(sr.ReadLine());
+                        }
+
+                        if (!proc.HasExited)
+                        {
+                            proc.Kill();
+                        }
+                    }
+                    logger.LogInformation("---------------Read end------------------");
+                }
+            }
+        }
     }
 }

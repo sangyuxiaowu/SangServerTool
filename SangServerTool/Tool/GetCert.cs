@@ -63,6 +63,14 @@ namespace SangServerTool.Tool
             {
                 File.WriteAllText(cert_file, cert);
                 _logger.LogInformation($"证书已保存到：{cert_file}");
+
+                // shell脚本
+                var shell = config["Certificate:okshell"];
+                if (!string.IsNullOrEmpty(shell))
+                {
+                    Utils.RunShell(shell, _logger);
+                }
+
                 return 0;
             }
             catch (Exception ex)
