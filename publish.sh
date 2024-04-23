@@ -9,7 +9,7 @@ for plate in ${plates[*]}; do
     echo
     echo "=========开始发布：${plate} ========="
     echo
-    dotnet publish $project/$project.csproj -c Release -f net6.0 --sc -r $plate -o=publish/$project.$plate -p:PublishSingleFile=true -p:PublishTrimmed=true
+    dotnet publish $project/$project.csproj -c Release -f net8.0 --sc -r $plate -o=publish/$project.$plate -p:PublishSingleFile=true -p:PublishTrimmed=true
     echo
     echo "=========开始打包 ========="
     echo
