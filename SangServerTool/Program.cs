@@ -11,7 +11,7 @@ services.AddLogging(logBuilder => {
     logBuilder.AddSimpleConsole(opt => {
         opt.SingleLine = true;
         opt.IncludeScopes = true;
-        opt.TimestampFormat = "hh:mm:ss ";
+        opt.TimestampFormat = "HH:mm:ss ";
     });
 });
 
@@ -48,6 +48,17 @@ ddnsCommand.Handler = CommandHandler.Create<string, int, bool, bool, string>(asy
     return await DDNS.Run(opt, logger);
 });
 rootCommand.AddCommand(ddnsCommand);
+
+// 定义获取 https 站点证书命令
+var getcertCommand = new Command("getcert", "Get SSL Cert from https site.");
+getcertCommand.AddOption(new Option<string>(new[] { "--config", "-c" }, "Set config json file.") { IsRequired = true });
+getcertCommand.Handler = CommandHandler.Create<string>(async (config) =>
+{
+    var logger = loggerFactory.CreateLogger("SangServerTool_GetCert");
+    var getCert = new GetCert(logger);
+    return await getCert.Run(config);
+});
+rootCommand.AddCommand(getcertCommand);
 
 // 解析并执行命令
 return await rootCommand.InvokeAsync(args);
