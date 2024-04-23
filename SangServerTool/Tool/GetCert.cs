@@ -61,7 +61,7 @@ namespace SangServerTool.Tool
             // 保存证书
             try
             {
-                File.WriteAllText(cert_file, cert);
+                File.WriteAllText(cert_file, $"-----BEGIN CERTIFICATE-----\n{cert}\n-----END CERTIFICATE-----");
                 _logger.LogInformation($"证书已保存到：{cert_file}");
 
                 // shell脚本
