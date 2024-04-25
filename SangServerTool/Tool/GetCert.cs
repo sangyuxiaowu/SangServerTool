@@ -96,7 +96,7 @@ namespace SangServerTool.Tool
                     await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, site));
                 }
 
-                return Convert.ToBase64String(_certificate);
+                return Convert.ToBase64String(_certificate, Base64FormattingOptions.InsertLineBreaks);
             }
             catch (Exception ex)
             {
