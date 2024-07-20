@@ -2,7 +2,8 @@
   "profiles": {
     "SangServerTool": {
       "commandName": "Project",
-      "commandLineArgs": "sync -c \"test.json\""
+      //"commandLineArgs": "sync -c \"test.json\""
+      "commandLineArgs": "ip"
     }
   }
 }

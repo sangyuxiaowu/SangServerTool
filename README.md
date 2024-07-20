@@ -97,6 +97,26 @@ SangServerTool ddns -c "test.json" --del=1
 }
 ```
 
+## IP
+
+参数说明：
+
+| 参数 | 说明|
+| --- | --- |
+| --web |  (Default: false) Is check from 'https://ifconfig.me/ip' to get you Internet IP? <br>如果为 true，则表示通过网络获取网络出口 IP
+
+获取网络出口 IP
+
+```bash
+SangServerTool ip --web
+```
+
+获取网卡显示 IP
+
+```bash
+SangServerTool ip
+```
+
 ## SSL
 
 参数说明：
