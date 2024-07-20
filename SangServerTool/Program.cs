@@ -49,6 +49,27 @@ ddnsCommand.Handler = CommandHandler.Create<string, int, bool, bool, string>(asy
 });
 rootCommand.AddCommand(ddnsCommand);
 
+// 定义IP获取命令
+var ipCommand = new Command("ip", "Get IP.");
+ipCommand.AddOption(new Option<bool>("--web", () => false, "Is check from 'https://ifconfig.me/ip' to get you Internet IP?"));
+ipCommand.Handler = CommandHandler.Create<bool>((web) =>
+{
+    var logger = loggerFactory.CreateLogger("SangServerTool_IP");
+    if (web)
+    {
+        logger.LogInformation(Utils.CurrentIPAddressByWeb());
+        logger.LogInformation(Utils.CurrentIPAddressByWeb(true));
+        return 0;
+    }
+    else
+    {
+        logger.LogInformation(Utils.CurrentIPAddress());
+        logger.LogInformation(Utils.CurrentIPAddress(true));
+        return 0;
+    }
+});
+rootCommand.AddCommand(ipCommand);
+
 // 定义获取 https 站点证书命令
 var getcertCommand = new Command("sync", "Get SSL Cert from https site.");
 getcertCommand.AddOption(new Option<string>(new[] { "--config", "-c" }, "Set config json file.") { IsRequired = true });

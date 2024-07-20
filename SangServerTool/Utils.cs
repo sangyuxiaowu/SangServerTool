@@ -37,14 +37,23 @@ namespace SangServerTool
             .Where(p => !exps.Contains(p.Name)) // 排除docker、lo等
             .Select(p => p.GetIPProperties())
             .SelectMany(p => p.UnicastAddresses)
-            .Where(p => p.Address.AddressFamily == family && !IPAddress.IsLoopback(p.Address));
-            //IPv6 时去除本地的
-            if (family == AddressFamily.InterNetworkV6)
-            {
-                ips = ips.Where(p => !p.Address.IsIPv6LinkLocal);
-            }
+            .Where(p => p.Address.AddressFamily == family && !IPAddress.IsLoopback(p.Address) &&
+                (family == AddressFamily.InterNetwork || !IsNotGoodIPv6(p))
+            );
             return ips.FirstOrDefault()?.Address.ToString();
         }
+
+        /// <summary>
+        /// 判断IPv6地址是否不太可用
+        /// 排除Dhcp,本地和随机的临时地址
+        /// </summary>
+        /// <param name="unicastAddress">单播地址信息</param>
+        /// <returns>不用则返回true</returns>
+        private static bool IsNotGoodIPv6(UnicastIPAddressInformation unicastAddress)
+        {
+            return unicastAddress.Address.IsIPv6LinkLocal || unicastAddress.PrefixOrigin == PrefixOrigin.Dhcp || unicastAddress.SuffixOrigin == SuffixOrigin.Random;
+        }
+
         /// <summary>
         /// 获取电脑外网IP
         /// </summary>
