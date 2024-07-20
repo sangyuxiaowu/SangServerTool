@@ -4,6 +4,8 @@ using System.Net.NetworkInformation;
 using System.Net;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Runtime.InteropServices;
 
 namespace SangServerTool
 {
@@ -51,7 +53,16 @@ namespace SangServerTool
         /// <returns>不用则返回true</returns>
         private static bool IsNotGoodIPv6(UnicastIPAddressInformation unicastAddress)
         {
-            return unicastAddress.Address.IsIPv6LinkLocal || unicastAddress.PrefixOrigin == PrefixOrigin.Dhcp || unicastAddress.SuffixOrigin == SuffixOrigin.Random;
+            // 判断平台
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return unicastAddress.Address.IsIPv6LinkLocal || unicastAddress.PrefixOrigin == PrefixOrigin.Dhcp || unicastAddress.SuffixOrigin == SuffixOrigin.Random;
+            }
+            else
+            {
+                // 其他暂时这样处理
+                return unicastAddress.Address.IsIPv6LinkLocal || unicastAddress.Address.ToString().Length < 35;
+            }
         }
 
         /// <summary>
