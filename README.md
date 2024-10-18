@@ -126,6 +126,8 @@ SangServerTool ip
 | -c, --config  | Required. Set config json file. <br> 设置配置文件路径 |
 | --retry | (Default: 2) How many retries? <br> 验证域名时重试几次，默认2次 |
 | --delay | (Default: 10) How many seconds to retry? <br> 验证域名时重试间隔多少秒，默认10秒 |
+| --force | (Default: false) Is force to apply? <br> 是否强制申请，如果为 true ，则会强制申请新的证书，否则会检查证书是否过期，过期则会申请新的证书 |
+| --script | (Default: false) Run script for test. <br> 是否运行测试脚本，如果为 true ，则会只尝试运行 `okshell` 测试脚本 |
 
 > 如：申请域名重试 3 次
 
