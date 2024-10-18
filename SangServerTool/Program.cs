@@ -26,9 +26,11 @@ var sslCommand = new Command("ssl", "Get Let's Encrypt SSL Cert.");
 sslCommand.AddOption(new Option<string>(new[]{"--config", "-c"}, "Set config json file.") { IsRequired = true });
 sslCommand.AddOption(new Option<int>("--retry", () => 8, "How many retries?"));
 sslCommand.AddOption(new Option<int>("--delay", () => 5, "How many seconds to retry?"));
-sslCommand.Handler = CommandHandler.Create<string, int, int>(async (config, retry, delay) =>
+sslCommand.AddOption(new Option<bool>("--force", () => false, "Force to renew cert."));
+sslCommand.AddOption(new Option<bool>("--script", () => false, "Run script for test."));
+sslCommand.Handler = CommandHandler.Create<string, int, int, bool, bool>(async (config, retry, delay, force, script) =>
 {
-    var opt = new AUTO_SSL { ConfigFile = config, Retry = retry, Delay = delay };
+    var opt = new AUTO_SSL { ConfigFile = config, Retry = retry, Delay = delay, Force = force, Script = script };
     var logger = loggerFactory.CreateLogger("SangServerTool_SSL");
     return await SSL.Run(opt, logger);
 });

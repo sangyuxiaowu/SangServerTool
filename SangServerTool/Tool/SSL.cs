@@ -37,10 +37,17 @@ namespace SangServerTool.Tool
             // ACME 账户信息
             CerAcme cer_acme = config.GetSection("ACME").Get<CerAcme>();
 
+            // 测试脚本调用
+            if (opt.Script)
+            {
+                Utils.RunShell(cer_info.okshell, logger);
+                return 0;
+            }
+
             // 是否存在 证书，不存在就直接创建申请了
             bool isHaved = File.Exists(cer_info.cerpath);
             //获取是否还有5天内就过期
-            if (isHaved && !Utils.isCerWillExp(cer_info.cerpath))
+            if (isHaved && !Utils.isCerWillExp(cer_info.cerpath) && !opt.Force)
             {
                 logger.LogInformation("无需处理");
                 return 0;

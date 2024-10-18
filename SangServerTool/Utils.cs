@@ -156,6 +156,10 @@ namespace SangServerTool
                     logger.LogInformation("---------------Read end------------------");
                 }
             }
+            else
+            {
+                logger.LogInformation("脚本文件不存在");
+            }
         }
     }
 }
