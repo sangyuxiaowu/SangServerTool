@@ -4,6 +4,7 @@ using SangServerTool;
 using SangServerTool.Tool;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
+using System.Runtime.InteropServices;
 
 
 ServiceCollection services = new();
@@ -15,6 +16,10 @@ services.AddLogging(logBuilder =>
         opt.IncludeScopes = true;
         opt.TimestampFormat = "HH:mm:ss ";
     });
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+    {
+        logBuilder.AddEventLog(new Microsoft.Extensions.Logging.EventLog.EventLogSettings { SourceName = "SangServerTool" });
+    }
 });
 
 using var sp = services.BuildServiceProvider();
