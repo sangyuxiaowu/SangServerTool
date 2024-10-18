@@ -7,8 +7,10 @@ using System.CommandLine.NamingConventionBinder;
 
 
 ServiceCollection services = new();
-services.AddLogging(logBuilder => {
-    logBuilder.AddSimpleConsole(opt => {
+services.AddLogging(logBuilder =>
+{
+    logBuilder.AddSimpleConsole(opt =>
+    {
         opt.SingleLine = true;
         opt.IncludeScopes = true;
         opt.TimestampFormat = "HH:mm:ss ";
@@ -23,7 +25,7 @@ var rootCommand = new RootCommand("SangServerTool");
 
 // 定义ssl命令
 var sslCommand = new Command("ssl", "Get Let's Encrypt SSL Cert.");
-sslCommand.AddOption(new Option<string>(new[]{"--config", "-c"}, "Set config json file.") { IsRequired = true });
+sslCommand.AddOption(new Option<string>(new[] { "--config", "-c" }, "Set config json file.") { IsRequired = true });
 sslCommand.AddOption(new Option<int>("--retry", () => 8, "How many retries?"));
 sslCommand.AddOption(new Option<int>("--delay", () => 5, "How many seconds to retry?"));
 sslCommand.AddOption(new Option<bool>("--force", () => false, "Force to renew cert."));
@@ -38,7 +40,7 @@ rootCommand.AddCommand(sslCommand);
 
 // 定义ddns命令
 var ddnsCommand = new Command("ddns", "Set DDNS.");
-ddnsCommand.AddOption(new Option<string>(new[] { "--config", "-c" }, "Set config json file.") { IsRequired = true});
+ddnsCommand.AddOption(new Option<string>(new[] { "--config", "-c" }, "Set config json file.") { IsRequired = true });
 ddnsCommand.AddOption(new Option<int>("--delay", () => 0, "How many seconds delay?"));
 ddnsCommand.AddOption(new Option<bool>("--del", () => false, "Is delete DDNS?"));
 ddnsCommand.AddOption(new Option<bool>("--v6", () => false, "Is ipv6?"));

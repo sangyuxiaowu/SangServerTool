@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SangServerTool.Domain
+﻿namespace SangServerTool.Domain
 {
 
     internal interface IDomain
@@ -24,6 +18,6 @@ namespace SangServerTool.Domain
     /// <param name="Msg">错误信息</param>
     /// <param name="Id">记录ID</param>
     /// <param name="Value">记录值</param>
-    public record DomainRes(bool Success, string Msg = "", string Id = "", string Value="");
+    public record DomainRes(bool Success, string Msg = "", string Id = "", string Value = "");
 
 }

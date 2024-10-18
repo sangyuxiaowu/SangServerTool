@@ -1,12 +1,8 @@
-﻿using System;
-using SangServerTool.Domain;
-using Microsoft.Extensions.Configuration;
-using Certes;
+﻿using Certes;
 using Certes.Acme;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-using System.Net;
-using System.Reflection;
+using SangServerTool.Domain;
 
 namespace SangServerTool.Tool
 {
@@ -53,7 +49,7 @@ namespace SangServerTool.Tool
                 return 0;
             }
 
-            if(cer_csr is null || cer_info is null || cer_acme is null)
+            if (cer_csr is null || cer_info is null || cer_acme is null)
             {
                 logger.LogError("配置文件格式错误");
                 return 1;
@@ -133,20 +129,21 @@ namespace SangServerTool.Tool
             int ok;
             do
             {
-                if (retry > 0) {
+                if (retry > 0)
+                {
                     logger.LogInformation($"正在查询 {retry.ToString()}/{opt.Retry.ToString()}");
                 }
                 ok = 0;
                 foreach (var challenge in DnsTask.dnsChallenge)
                 {
                     var result = await challenge.Resource();
-    
+
                     ok += result.Status == Certes.Acme.Resource.ChallengeStatus.Valid ? 1 : 0;
                 }
 
                 retry++;
                 // 延时后重试
-                await Task.Delay(1000*opt.Delay);
+                await Task.Delay(1000 * opt.Delay);
             } while (retry < opt.Retry && ok != rrdomain.Length);
 
             //删除TXT记录
@@ -157,7 +154,8 @@ namespace SangServerTool.Tool
             }
 
 
-            if (ok != rrdomain.Length) {
+            if (ok != rrdomain.Length)
+            {
                 logger.LogError($"验证域名出错：域名TXT记录未全部验证通过，{ok}/{rrdomain.Length}");
                 return 1;
             }
@@ -279,7 +277,8 @@ namespace SangServerTool.Tool
         /// <summary>
         /// 配置信息，申请证书用的ACME账户
         /// </summary>
-        public record CerAcme {
+        public record CerAcme
+        {
             /// <summary>
             /// 邮箱
             /// </summary>

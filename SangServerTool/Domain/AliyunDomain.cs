@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace SangServerTool.Domain
@@ -61,7 +57,7 @@ namespace SangServerTool.Domain
             // 返回有异常
             if (json["RecordId"] is null)
             {
-                return new DomainRes(false, "返回数据异常"+ json.ToString());
+                return new DomainRes(false, "返回数据异常" + json.ToString());
             }
 
             return new DomainRes(true, "ok", json["RecordId"].ToString());
