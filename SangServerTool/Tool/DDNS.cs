@@ -1,6 +1,6 @@
-﻿using SangServerTool.Domain;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SangServerTool.Domain;
 
 namespace SangServerTool.Tool
 {
@@ -10,7 +10,7 @@ namespace SangServerTool.Tool
     public class DDNS
     {
 
-        public async static Task<int> Run(AUTO_DDNS opt,ILogger logger)
+        public async static Task<int> Run(AUTO_DDNS opt, ILogger logger)
         {
             logger.LogInformation($"开始执行：{DateTime.Now.ToString()}");
             logger.LogInformation($"配置文件：{opt.ConfigFile}");
@@ -36,7 +36,7 @@ namespace SangServerTool.Tool
                 "T" => new TencentCloudDomain(config["Access:AK"], config["Access:SK"]),
                 _ => new AliyunDomain(config["Access:AK"], config["Access:SK"])
             };
-            
+
 
             logger.LogInformation($"检查域名当前解析：{config["DDNS:ddns"]}");
 

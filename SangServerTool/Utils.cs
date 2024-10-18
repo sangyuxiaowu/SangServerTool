@@ -1,11 +1,10 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using System.Net.Sockets;
-using System.Net.NetworkInformation;
-using System.Net;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using System.Text.Json;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SangServerTool
 {
@@ -33,7 +32,7 @@ namespace SangServerTool
         /// <returns></returns>
         public static string? CurrentIPAddress(bool isV6 = false)
         {
-            var family = isV6? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
+            var family = isV6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
             List<string> exps = new List<string> { "docker0", "lo", "l4tbr0" };
             var ips = NetworkInterface.GetAllNetworkInterfaces()
             .Where(p => !exps.Contains(p.Name)) // 排除docker、lo等
@@ -69,14 +68,16 @@ namespace SangServerTool
         /// 获取电脑外网IP
         /// </summary>
         /// <returns></returns>
-        public static string CurrentIPAddressByWeb(bool isV6 = false) {
+        public static string CurrentIPAddressByWeb(bool isV6 = false)
+        {
             using var client = new HttpClient();
             string ip = "";
             try
             {
                 ip = client.GetStringAsync($"https://{(isV6 ? "6" : "4")}.ipw.cn/").Result;
             }
-            catch {
+            catch
+            {
                 return ip;
             }
             return ip;
@@ -109,11 +110,13 @@ namespace SangServerTool
         /// <param name="domain">DDNS</param>
         /// <param name="basedomain">基础域名</param>
         /// <returns>RR，空为异常</returns>
-        public static string GetRRDdns(string domain, string basedomain) {
+        public static string GetRRDdns(string domain, string basedomain)
+        {
             // 解析主域名
             if (domain == basedomain) return "@";
             int inx = domain.LastIndexOf(basedomain);
-            if (inx > -1) { 
+            if (inx > -1)
+            {
                 return domain.Substring(0, inx - 1);
             }
             return "";
@@ -124,7 +127,7 @@ namespace SangServerTool
         /// </summary>
         /// <param name="file">脚本文件</param>
         /// <param name="logger">日志</param>
-        public static void RunShell(string file,ILogger logger)
+        public static void RunShell(string file, ILogger logger)
         {
             // 脚本文件存在，执行
             if (File.Exists(file))
@@ -155,6 +158,10 @@ namespace SangServerTool
                     }
                     logger.LogInformation("---------------Read end------------------");
                 }
+            }
+            else
+            {
+                logger.LogInformation($"脚本文件不存在: {file}");
             }
         }
     }

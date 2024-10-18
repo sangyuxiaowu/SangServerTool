@@ -20,6 +20,16 @@
         /// DNS验证失败等待多少秒重试？
         /// </summary>
         public int Delay { get; set; }
+
+        /// <summary>
+        /// 强制更新证书
+        /// </summary>
+        public bool Force { get; set; } = false;
+
+        /// <summary>
+        /// 是否仅进行脚本执行测试
+        /// </summary>
+        public bool Script { get; set; } = false;
     }
 
 
