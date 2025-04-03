@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Configuration;
+ï»¿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -14,56 +14,75 @@ namespace SangServerTool.Tool
             _logger = logger;
         }
 
-        public async Task<int> Run(string config_file)
+        /// <summary>
+        /// è·å–è¿œç«¯è¯ä¹¦
+        /// </summary>
+        /// <param name="config_file"></param>
+        /// <param name="force"></param>
+        /// <returns></returns>
+        public async Task<int> Run(string config_file, bool force)
         {
-            _logger.LogInformation($"¿ªÊ¼Ö´ĞĞ£º{DateTime.Now.ToString()}");
-            _logger.LogInformation($"ÅäÖÃÎÄ¼ş£º{config_file}");
+            _logger.LogInformation($"å¼€å§‹æ‰§è¡Œï¼š{DateTime.Now.ToString()}");
+            _logger.LogInformation($"é…ç½®æ–‡ä»¶ï¼š{config_file}");
             if (!File.Exists(config_file))
             {
-                _logger.LogError("ÅäÖÃÎÄ¼ş²»´æÔÚ");
+                _logger.LogError("é…ç½®æ–‡ä»¶ä¸å­˜åœ¨");
                 return 1;
             }
             IConfigurationBuilder configBuilder = new ConfigurationBuilder();
             configBuilder.AddJsonFile(config_file, optional: false, reloadOnChange: false);
             IConfigurationRoot config = configBuilder.Build();
 
-            // »ñÈ¡ÅäÖÃµÄÔ´Õ¾µãĞÅÏ¢
+            // è·å–é…ç½®çš„æºç«™ç‚¹ä¿¡æ¯
             var site = config["Certificate:site"];
             if (string.IsNullOrEmpty(site))
             {
-                _logger.LogError("Î´ÅäÖÃÔ´Õ¾µãĞÅÏ¢");
+                _logger.LogError("æœªé…ç½®æºç«™ç‚¹ä¿¡æ¯");
                 return 1;
             }
-            // ¼ì²éÊÇ·ñÎªºÏ·¨µÄhttps URL
+            // æ£€æŸ¥æ˜¯å¦ä¸ºåˆæ³•çš„https URL
             if (!site.StartsWith("https://"))
             {
-                _logger.LogError("Ô´Õ¾µãĞÅÏ¢²»ÊÇhttpsÕ¾µã");
+                _logger.LogError("æºç«™ç‚¹ä¿¡æ¯ä¸æ˜¯httpsç«™ç‚¹");
                 return 1;
             }
 
-            // »ñÈ¡´æ´¢Ö¤ÊéÎ»ÖÃ
+            // è·å–å­˜å‚¨è¯ä¹¦ä½ç½®
             var cert_file = config["Certificate:cerpath"];
             if (string.IsNullOrEmpty(cert_file))
             {
-                _logger.LogError("Î´ÅäÖÃÖ¤Êé´æ´¢Î»ÖÃ");
+                _logger.LogError("æœªé…ç½®è¯ä¹¦å­˜å‚¨ä½ç½®");
                 return 1;
             }
 
-            // »ñÈ¡Ô¶¶ËÖ¤Êé
+            if(File.Exists(cert_file))
+            {
+                // æ£€æŸ¥è¯ä¹¦æ˜¯å¦è¿‡æœŸ
+                int daysToExpiry = Utils.GetCertExpiryDays(cert_file);
+                _logger.LogInformation($"è¯ä¹¦è¿˜æœ‰ {daysToExpiry} å¤©è¿‡æœŸ");
+                
+                if (!force && daysToExpiry > Utils.CertExpiryDays)
+                {
+                    _logger.LogInformation("è¯ä¹¦æœªåˆ°æœŸï¼Œæ— éœ€æ›´æ–°");
+                    return 0;
+                }
+            }
+
+            // è·å–è¿œç«¯è¯ä¹¦
             var cert = await GetRemoteCert(site);
             if (cert == null)
             {
-                _logger.LogError("»ñÈ¡Ô¶¶ËÖ¤ÊéÊ§°Ü");
+                _logger.LogError("è·å–è¿œç«¯è¯ä¹¦å¤±è´¥");
                 return 1;
             }
 
-            // ±£´æÖ¤Êé
+            // ä¿å­˜è¯ä¹¦
             try
             {
                 File.WriteAllText(cert_file, $"-----BEGIN CERTIFICATE-----\n{cert}\n-----END CERTIFICATE-----");
-                _logger.LogInformation($"Ö¤ÊéÒÑ±£´æµ½£º{cert_file}");
+                _logger.LogInformation($"è¯ä¹¦å·²ä¿å­˜åˆ°ï¼š{cert_file}");
 
-                // shell½Å±¾
+                // shellè„šæœ¬
                 var shell = config["Certificate:okshell"];
                 if (!string.IsNullOrEmpty(shell))
                 {
@@ -74,7 +93,7 @@ namespace SangServerTool.Tool
             }
             catch (Exception ex)
             {
-                _logger.LogError($"±£´æÖ¤ÊéÊ§°Ü£º{ex.Message}");
+                _logger.LogError($"ä¿å­˜è¯ä¹¦å¤±è´¥ï¼š{ex.Message}");
                 return 1;
             }
 
@@ -99,14 +118,14 @@ namespace SangServerTool.Tool
             }
             catch (Exception ex)
             {
-                _logger.LogError($"»ñÈ¡Ö¤ÊéÊ§°Ü: {ex.Message}");
+                _logger.LogError($"è·å–è¯ä¹¦å¤±è´¥: {ex.Message}");
                 return null;
             }
         }
 
         private bool CertificateValidationCallback(HttpRequestMessage requestMessage, X509Certificate2 certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            _logger.LogInformation($"Ö¤ÊéĞÅÏ¢: {certificate.Subject}");
+            _logger.LogInformation($"è¯ä¹¦ä¿¡æ¯: {certificate.Subject}");
             _certificate = certificate.GetRawCertData();
             return true;
         }

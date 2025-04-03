@@ -158,6 +158,7 @@ SangServerTool ssl -c "test.json" --retry=3
 | 参数 | 说明|
 | --- | --- |
 | -c, --config  | Required. Set config json file. <br> 设置配置文件路径 |
+| --force | (Default: false) Is force to apply? <br> 是否强制更新，如果为 true ，则会强制更新证书，否则会检查证书是否过期，过期则会更新证书 |
 
 > 如：获取远端站点证书
 

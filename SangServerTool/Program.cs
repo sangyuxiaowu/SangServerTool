@@ -82,11 +82,12 @@ rootCommand.AddCommand(ipCommand);
 // 定义获取 https 站点证书命令
 var getcertCommand = new Command("sync", "Get SSL Cert from https site.");
 getcertCommand.AddOption(new Option<string>(new[] { "--config", "-c" }, "Set config json file.") { IsRequired = true });
-getcertCommand.Handler = CommandHandler.Create<string>(async (config) =>
+getcertCommand.AddOption(new Option<bool>("--force", () => false, "Force to renew cert."));
+getcertCommand.Handler = CommandHandler.Create<string, bool>(async (config, force) =>
 {
     var logger = loggerFactory.CreateLogger("SangServerTool_Sync");
     var getCert = new GetCert(logger);
-    return await getCert.Run(config);
+    return await getCert.Run(config, force);
 });
 rootCommand.AddCommand(getcertCommand);
 
