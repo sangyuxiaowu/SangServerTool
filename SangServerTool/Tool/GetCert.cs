@@ -58,9 +58,12 @@ namespace SangServerTool.Tool
             if(File.Exists(cert_file))
             {
                 // 检查证书是否过期
-                if (!force && Utils.isCerWillExp(cert_file))
+                int daysToExpiry = Utils.GetCertExpiryDays(cert_file);
+                _logger.LogInformation($"证书还有 {daysToExpiry} 天过期");
+                
+                if (!force && daysToExpiry > Utils.CertExpiryDays)
                 {
-                    _logger.LogInformation("证书未过期，无需更新");
+                    _logger.LogInformation("证书未到期，无需更新");
                     return 0;
                 }
             }

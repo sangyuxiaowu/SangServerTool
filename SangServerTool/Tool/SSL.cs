@@ -42,11 +42,16 @@ namespace SangServerTool.Tool
 
             // 是否存在 证书，不存在就直接创建申请了
             bool isHaved = File.Exists(cer_info.cerpath);
-            //获取是否还有5天内就过期
-            if (isHaved && !Utils.isCerWillExp(cer_info.cerpath) && !opt.Force)
+            if (isHaved)
             {
-                logger.LogInformation("无需处理");
-                return 0;
+                int daysToExpiry = Utils.GetCertExpiryDays(cer_info.cerpath);
+                logger.LogInformation($"证书还有 {daysToExpiry} 天过期");
+                
+                if (daysToExpiry > Utils.CertExpiryDays && !opt.Force)
+                {
+                    logger.LogInformation("证书未到期，无需处理");
+                    return 0;
+                }
             }
 
             if (cer_csr is null || cer_info is null || cer_acme is null)

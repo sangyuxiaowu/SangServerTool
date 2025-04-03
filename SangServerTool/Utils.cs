@@ -11,19 +11,22 @@ namespace SangServerTool
     public static class Utils
     {
         /// <summary>
-        /// 证书是否在5日内过期
+        /// 获取证书还有几天过期
         /// </summary>
         /// <param name="certFilePath">证书路径</param>
-        /// <returns>是否符合5日内过期</returns>
-        public static bool isCerWillExp(string certFilePath)
+        /// <returns>剩余天数，负数表示已过期</returns>
+        public static int GetCertExpiryDays(string certFilePath)
         {
             var cer = new X509Certificate(certFilePath);
             DateTime expdate = Convert.ToDateTime(cer.GetExpirationDateString());
-            TimeSpan span = DateTime.Now.Subtract(expdate);
-            //Console.WriteLine(span.Days);
-            if (span.Days >= -5) return true;
-            return false;
+            TimeSpan span = expdate.Subtract(DateTime.Now);
+            return (int)span.TotalDays;
         }
+
+        /// <summary>
+        /// 证书过期前几天处理
+        /// </summary>
+        public static int CertExpiryDays = 5;
 
         /// <summary>
         /// 获取电脑网卡IP
